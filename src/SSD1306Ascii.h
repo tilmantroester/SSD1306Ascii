@@ -79,6 +79,11 @@
 /** Write to display RAM with possible buffering. */
 #define SSD1306_MODE_RAM_BUF 2
 //------------------------------------------------------------------------------
+/** Scroll left horizontally. */
+#define SCROLL_LEFT 0
+/** Scroll right horizontally. */
+#define SCROLL_RIGHT 1
+//------------------------------------------------------------------------------
 /**
  * @brief Reset the display controller.
  *
@@ -409,6 +414,25 @@ class SSD1306Ascii : public Print {
    * @return the width of the string in pixels.
    */
   size_t strWidth(const char* str) const;
+  /**
+   * @brief Draw a 8x8 tile.
+   * 
+   * @param[in] c Pointer to tile bitmap.
+   */
+  void drawTile(uint8_t *tile);
+  /**
+   * @brief Use hardware scrolling to scroll a section of the display memory.
+   * 
+   * @param[in] n Column of the left edge of the scrolling window.
+   * @param[in] n Column of the right edge of the scrolling window.
+   * @param[in] n Row of the upper edge of the scrolling window.
+   * @param[in] n Row of the lower edge of the scrolling window.
+   * @param[in] n Scroll direction, either SCROLL_LEFT or SCROLL_RIGHT.
+   * @param[in] c Pointer to new column data. Needs to have size end_row-start_row.
+   * @return 1 on sucess, 0 on failure.
+   */
+  uint8_t ssd1315HardwareScroll(uint8_t start_col, uint8_t end_col, uint8_t start_row, uint8_t end_row,
+                                uint8_t direction, uint8_t* col_data);
   /**
    * @brief Initialize TickerState struct and clear ticker field.
    *

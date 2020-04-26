@@ -210,6 +210,57 @@ size_t SSD1306Ascii::strWidth(const char* str) const {
   return sw;
 }
 //------------------------------------------------------------------------------
+void SSD1306Ascii::drawTile(uint8_t *tile) {
+    for(uint8_t i=0; i<8; i++) {
+        ssd1306WriteRam(tile[i]);
+    }
+}
+//------------------------------------------------------------------------------
+uint8_t SSD1306Ascii::ssd1315HardwareScroll(uint8_t start_col, uint8_t end_col, uint8_t start_row, uint8_t end_row,
+                                            uint8_t direction, uint8_t* col_data) {
+    
+    if(end_col <= start_col) {
+        return 0;
+    }
+    if(end_row <= start_row) {
+        return 0;
+    }
+    switch(direction) {
+        case SCROLL_LEFT:
+            ssd1306WriteCmd(0x2D); // Left scroll
+            break;
+        case SCROLL_RIGHT:
+            ssd1306WriteCmd(0x2C); // Right scroll
+            break;
+        default:
+            return 0;
+    }
+    ssd1306WriteCmd(0x00); // Dummy byte
+    ssd1306WriteCmd(start_row); // Start page address
+    ssd1306WriteCmd(0x01); // Dummy byte
+    ssd1306WriteCmd(end_row-1); // End page address. Can be same as start_row
+    ssd1306WriteCmd(start_col); // Start column address
+    ssd1306WriteCmd(end_col); // End column address
+
+    delay(20);  // 2/framefreq (should be ~20ms by default)
+
+    if(col_data != NULL) {
+        for(uint8_t i=0; i<end_row-start_row; i++) {
+            if(direction ==SCROLL_LEFT) {
+                // Replace right-most column
+                setCol(end_col);
+            }
+            else {
+                // Replace left-most column
+                setCol(start_col);
+            }
+            setRow(start_row+i);
+            ssd1306WriteRam(col_data[i]);
+        }
+    }
+    return 1;
+}
+//------------------------------------------------------------------------------
 void SSD1306Ascii::tickerInit(TickerState* state, const uint8_t* font,
        uint8_t row, bool mag2X, uint8_t bgnCol, uint8_t endCol) {
   state->font = font;
